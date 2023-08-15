@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -20,7 +21,7 @@ type Course struct {
 }
 
 type Author struct {
-	Filename string `json:"fullname"`
+	Fullname string `json:"fullname"`
 	Website  string `json:"website"`
 }
 
@@ -31,7 +32,19 @@ func (c *Course) IsEmpty() bool {
 }
 
 func main() {
+	r := mux.NewRouter()
 
+	// seeding
+	courses = append(courses, Course{CourseId: "2", CourseName: "JS", CoursePrice: 120, Author: &Author{Fullname: "Aman"}})
+
+	r.HandleFunc("/", serverHome).Methods("GET")
+	r.HandleFunc("/courses", getAllCourses).Methods("GET")
+	r.HandleFunc("/course/{id}", getOneCourse).Methods("GET")
+
+	http.Handle("/", r)
+
+	// listening to a port
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
 
 // controllers
@@ -55,7 +68,7 @@ func getAllCourses(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func getOneCours(w http.ResponseWriter, r *http.Request) {
+func getOneCourse(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Get one course")
 	// get params from url
 	w.Header().Set("Content-Type", "application/json")
